@@ -1,56 +1,50 @@
-import serial
+import os
 import time
-from enum import Enum
+
+# Function to simulate sending commands via IR transmitter
+def send_command_with_delay(command_code, delay_seconds):
+    # Replace this section with your IR transmission logic
+    print(f"Sending command code {command_code} with a delay of {delay_seconds} seconds...")
+    time.sleep(delay_seconds)
+    print("Command sent successfully!")
 
 # Enum class for commands
-class TVCommand(Enum):
-  TURN_ON_OFF  = '1'
-  MUTE_UNMUTE  = '2'
-  VOLUME_UP    = '3' 
-  VOLUME_DOWN  = '4'
-  CHANNEL_UP   = '5'
-  CHANNEL_DOWN = '6'
-
-# Open serial port
-try: 
-  ser = serial.Serial('COM4', 115200, timeout=1)
-  print("Connected to:", ser.name)
-
-except serial.SerialException:
-  print("Error opening port")
-  exit()   
-
-# Add a delay to allow Arduino to boot up  
-time.sleep(2)
+class TVCommand:
+    TURN_ON_OFF = 0x8
+    MUTE_UNMUTE = 0x9
+    VOLUME_UP = 0x2
+    VOLUME_DOWN = 0x3
+    CHANNEL_UP = 0x0
+    CHANNEL_DOWN = 0x1
 
 # Function to send commands
 def send_command(command):
+    # Add delays according to your IR transmitter's requirements
+    if command == TVCommand.TURN_ON_OFF:
+        send_command_with_delay(command, 1)
+    elif command == TVCommand.MUTE_UNMUTE:
+        send_command_with_delay(command, 1)
+    elif command == TVCommand.VOLUME_UP:
+        send_command_with_delay(command, 1)
+    elif command == TVCommand.VOLUME_DOWN:
+        send_command_with_delay(command, 1)
+    elif command == TVCommand.CHANNEL_UP:
+        send_command_with_delay(command, 1)
+    elif command == TVCommand.CHANNEL_DOWN:
+        send_command_with_delay(command, 1)
+    else:
+        print("Invalid command")
 
-  # Flush buffers
-  ser.flush()
-  # Flush a second time to clear buffers
-  ser.flush() 
-
-  # Send actual command
-  ser.write(command.encode())
-  
-  # Longer delay
-  time.sleep(1)  
-
-  # Read response
-  response = ser.readline().decode().strip()
-
-  print("Sent:", command)
-  print("Response:", response)
-
-# Function to send all commands  
+# Function to send all commands
 def send_commands():
-    send_command(TVCommand.TURN_ON_OFF.value)
-    send_command(TVCommand.MUTE_UNMUTE.value)
-    send_command(TVCommand.VOLUME_UP.value)
-    send_command(TVCommand.VOLUME_DOWN.value)
-    send_command(TVCommand.CHANNEL_UP.value)
-    send_command(TVCommand.CHANNEL_DOWN.value)
+    send_command(TVCommand.TURN_ON_OFF)
+    send_command(TVCommand.MUTE_UNMUTE)
+    send_command(TVCommand.VOLUME_UP)
+    send_command(TVCommand.VOLUME_DOWN)
+    send_command(TVCommand.CHANNEL_UP)
+    send_command(TVCommand.CHANNEL_DOWN)
 
-# Close serial port, CAUSED ERROR
-#ser.close()
+# If this script is run directly
+if __name__ == "__main__":
+    # Example of sending all commands
+    send_commands()

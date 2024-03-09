@@ -4,41 +4,35 @@ import serial_com
 import json
 import pyautogui
 import threading
-#import pyttsx3
+#import ir_transmitter_code  # Import the Python file containing the adapted Arduino code
 from gtts import gTTS
 import os
 from serial_com import send_command, TVCommand  # Import the send_command function and TVCommand enum from serial_com.py
 
-# Function to send power on command
+# Expose functions for controlling the TV
 @eel.expose 
 def powerOnOff():
-    serial_com.send_command(serial_com.TVCommand.TURN_ON_OFF.value)
+    serial_com.send_command_with_delay(0x4, 0x8)
 
-# Function to send mute command
 @eel.expose 
 def muteUnmute():
-    serial_com.send_command(serial_com.TVCommand.MUTE_UNMUTE.value)
+    serial_com.send_command_with_delay(0x4, 0x9)
 
-# Function to send volume up command
 @eel.expose 
 def volumeUp():
-    serial_com.send_command(serial_com.TVCommand.VOLUME_UP.value)
+    serial_com.send_command_with_delay(0x4, 0x2)
 
-# Function to send volume down command
 @eel.expose 
 def volumeDown():
-    serial_com.send_command(serial_com.TVCommand.VOLUME_DOWN.value)
+    serial_com.send_command_with_delay(0x4, 0x3)
 
-# Function to send channel up command
 @eel.expose 
 def channelUp():
-    serial_com.send_command(serial_com.TVCommand.CHANNEL_UP.value)
+    serial_com.send_command_with_delay(0x4, 0x0)
 
-# Function to send channel down command
 @eel.expose 
 def channelDown():
-    serial_com.send_command(serial_com.TVCommand.CHANNEL_DOWN.value)
-
+    serial_com.send_command_with_delay(0x4, 0x1)
 
 
 #controller = rfcontroller.RFController() # Comment this out when developing on desktop
@@ -90,7 +84,7 @@ if __name__ == "__main__":
     try:
         eel.init('web', allowed_extensions=[".js",".html"])
         resetMouse()
-        eel.start('C:/Users/kaspe/ALS-Assistive-Tech-UShin/ALS-Assistive-Tech-TV-Remote/web/index.html', port=8001, cmdline_args=['--start-fullscreen'])
+        eel.start('C:/TV_Remote_Testing_Today/ALS-Assistive-Tech-TV-Remote/web/index.html', port=8001, cmdline_args=['--start-fullscreen'])
     finally:
         cleanup()
 
