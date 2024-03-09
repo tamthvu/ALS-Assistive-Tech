@@ -1,11 +1,24 @@
-import os
+import RPi.GPIO as GPIO
 import time
 
-# Function to simulate sending commands via IR transmitter
+# Set the GPIO mode to BCM
+GPIO.setmode(GPIO.BCM)
+
+# Define the GPIO pin for IR transmitter
+IR_TRANSMITTER_PIN = 16
+
+# Initialize the GPIO pin for IR transmitter
+GPIO.setup(IR_TRANSMITTER_PIN, GPIO.OUT)
+
+# Function to send a command via IR transmitter
 def send_command_with_delay(command_code, delay_seconds):
     # Replace this section with your IR transmission logic
     print(f"Sending command code {command_code} with a delay of {delay_seconds} seconds...")
+    # Activate IR transmitter
+    GPIO.output(IR_TRANSMITTER_PIN, GPIO.HIGH)
     time.sleep(delay_seconds)
+    # Deactivate IR transmitter
+    GPIO.output(IR_TRANSMITTER_PIN, GPIO.LOW)
     print("Command sent successfully!")
 
 # Enum class for commands
@@ -46,5 +59,9 @@ def send_commands():
 
 # If this script is run directly
 if __name__ == "__main__":
-    # Example of sending all commands
-    send_commands()
+    try:
+        # Example of sending all commands
+        send_commands()
+    finally:
+        # Clean up GPIO pins
+        GPIO.cleanup()
