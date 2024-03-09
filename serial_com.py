@@ -1,5 +1,13 @@
+import os
 import RPi.GPIO as GPIO
 import time
+import serial  # Add this line to import the serial module
+
+# Open serial port
+ser = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)  # Adjust the port name ('/dev/ttyUSB0') according to your setup
+
+# Add a delay to allow Arduino to boot up
+time.sleep(2)
 
 # Set the GPIO mode to BCM
 GPIO.setmode(GPIO.BCM)
