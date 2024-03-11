@@ -1,5 +1,4 @@
 import RPi.GPIO as GPIO
-import pigpio
 import time
 from enum import Enum
 
@@ -22,16 +21,19 @@ IR_TRANSMITTER_PIN = 23
 # Initialize the GPIO pin for IR transmitter
 GPIO.setup(IR_TRANSMITTER_PIN, GPIO.OUT)
 
-# Set up the pigpio instance
-pi = pigpio.pi()
-
 # Define the TinyIRReceiver protocol parameters
-TINYIR_FREQ = 38000      # TinyIRReceiver frequency in Hz
+TINYIR_FREQ = 38000  # TinyIRReceiver frequency in Hz
 TINYIR_HEADER_MARK = 9000  # Header mark in microseconds
 TINYIR_HEADER_SPACE = 4500  # Header space in microseconds
-TINYIR_BIT_MARK = 560    # Bit mark in microseconds
+TINYIR_BIT_MARK = 560  # Bit mark in microseconds
 TINYIR_ONE_SPACE = 1690  # One bit space in microseconds
 TINYIR_ZERO_SPACE = 560  # Zero bit space in microseconds
+
+# Function to send a pulse
+def send_pulse(duration):
+    GPIO.output(IR_TRANSMITTER_PIN, GPIO.HIGH)
+    time.sleep(duration / 1000000)
+    GPIO.output(IR_TRANSMITTER_PIN, GPIO.LOW)
 
 # Function to send a command via IR transmitter with a specified delay
 def send_command_with_delay(command):
@@ -46,32 +48,25 @@ def send_command_with_delay(command):
     """
     address, command_code, tv_command, delay_seconds = command
 
-    # Construct waveform for the command
-    wf = [
-        pigpio.pulse(1 << IR_TRANSMITTER_PIN, 0, TINYIR_HEADER_MARK),  # Header mark
-        pigpio.pulse(0, 1 << IR_TRANSMITTER_PIN, TINYIR_HEADER_SPACE)   # Header space
-    ]
+    # Send header mark and space
+    send_pulse(TINYIR_HEADER_MARK)
+    time.sleep(TINYIR_HEADER_SPACE / 1000000)
 
-    # Add pulses for the address
+    # Send address bits
     for bit in '{:08b}'.format(address)[::-1]:
-        wf.append(pigpio.pulse(1 << IR_TRANSMITTER_PIN, 0, TINYIR_BIT_MARK))  # Bit mark
+        send_pulse(TINYIR_BIT_MARK)
         if bit == '1':
-            wf.append(pigpio.pulse(0, 1 << IR_TRANSMITTER_PIN, TINYIR_ONE_SPACE))  # One bit space
+            time.sleep(TINYIR_ONE_SPACE / 1000000)
         else:
-            wf.append(pigpio.pulse(0, 1 << IR_TRANSMITTER_PIN, TINYIR_ZERO_SPACE))  # Zero bit space
+            time.sleep(TINYIR_ZERO_SPACE / 1000000)
 
-    # Add pulses for the command
+    # Send command bits
     for bit in '{:08b}'.format(command_code)[::-1]:
-        wf.append(pigpio.pulse(1 << IR_TRANSMITTER_PIN, 0, TINYIR_BIT_MARK))  # Bit mark
+        send_pulse(TINYIR_BIT_MARK)
         if bit == '1':
-            wf.append(pigpio.pulse(0, 1 << IR_TRANSMITTER_PIN, TINYIR_ONE_SPACE))  # One bit space
+            time.sleep(TINYIR_ONE_SPACE / 1000000)
         else:
-            wf.append(pigpio.pulse(0, 1 << IR_TRANSMITTER_PIN, TINYIR_ZERO_SPACE))  # Zero bit space
-
-    # Transmit the waveform
-    pi.wave_add_generic(wf)
-    wid = pi.wave_create()
-    pi.wave_send_once(wid)
+            time.sleep(TINYIR_ZERO_SPACE / 1000000)
 
     print(f"Sent command: Address={address:02X}, Command={command_code:02X}, TV Command={tv_command}")
     time.sleep(delay_seconds)
@@ -99,6 +94,5 @@ if __name__ == "__main__":
             time.sleep(2)  # Add a delay between commands for better reception
 
     finally:
-        # Clean up GPIO pins and pigpio instance
+        # Clean up GPIO pins
         GPIO.cleanup()
-        pi.stop()
