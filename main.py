@@ -1,44 +1,46 @@
+import os
 import eel
-import serial_com
-#import rfcontroller # This import should be commented out when testing on a PC
+import irtx_pi  # Import the irtx_pi module
+# import rfcontroller # This import should be commented out when testing on a PC
 import json
 import pyautogui
 import threading
-#import ir_transmitter_code  # Import the Python file containing the adapted Arduino code
+# import pyttsx3
 from gtts import gTTS
-import os
-from serial_com import send_command, TVCommand  # Import the send_command function and TVCommand enum from serial_com.py
 
-# Expose functions for controlling the TV
-@eel.expose 
+# Function to send power on/off command
+@eel.expose
 def powerOnOff():
-    serial_com.send_command_with_delay(0x4, 0x8)
+    irtx_pi.send_commands('TURN_ON_OFF')
 
-@eel.expose 
+# Function to send mute/unmute command
+@eel.expose
 def muteUnmute():
-    serial_com.send_command_with_delay(0x4, 0x9)
+    irtx_pi.send_commands('MUTE_UNMUTE')
 
-@eel.expose 
+# Function to send volume up command
+@eel.expose
 def volumeUp():
-    serial_com.send_command_with_delay(0x4, 0x2)
+    irtx_pi.send_commands('VOLUME_UP')
 
-@eel.expose 
+# Function to send volume down command
+@eel.expose
 def volumeDown():
-    serial_com.send_command_with_delay(0x4, 0x3)
+    irtx_pi.send_commands('VOLUME_DOWN')
 
-@eel.expose 
+# Function to send channel up command
+@eel.expose
 def channelUp():
-    serial_com.send_command_with_delay(0x4, 0x0)
+    irtx_pi.send_commands('CHANNEL_UP')
 
-@eel.expose 
+# Function to send channel down command
+@eel.expose
 def channelDown():
-    serial_com.send_command_with_delay(0x4, 0x1)
-
+    irtx_pi.send_commands('CHANNEL_DOWN')
 
 #controller = rfcontroller.RFController() # Comment this out when developing on desktop
 screenWidth, screenHeight = pyautogui.size()
 pyautogui.FAILSAFE = False
-
 
 @eel.expose
 def togglePlug(command):
@@ -74,28 +76,13 @@ def speak_from_text(text):
     speak_text(text)  # The function defined above
 
 
-# At the end of your main script or when the Eel server shuts down
-def cleanup():
-    serial_com.ser.close()
-    print("Serial port closed")
-
-# Start the eel web server
+# Start the eel web server      
 if __name__ == "__main__":
-    try:
-        eel.init('web', allowed_extensions=[".js",".html"])
-        resetMouse()
-        eel.start('C:/TV_Remote_Testing_Today/ALS-Assistive-Tech-TV-Remote/web/index.html', port=8001, cmdline_args=['--start-fullscreen'])
-    finally:
-        cleanup()
+    # eel.init('web', allowed_extensions=[".js",".html"])
+    eel.init('/home/pi/ALS-Assistive-Tech/web', allowed_extensions=[".js",".html"])
+    resetMouse()
+    eel.start('index.html', cmdline_args=['--start-fullscreen'])
 
-# Call send_commands() after server starts
-serial_com.send_commands()
-
-
-# At the end of your main script or when the Eel server shuts down
-def cleanup():
-    serial_com.ser.close()
-    print("Serial port closed")
 
 def speak_text(text):
     # Create a tts object
@@ -105,8 +92,7 @@ def speak_text(text):
     tts.save("output.mp3")
     
     # Play the audio file
-    os.system("mpg123 output.mp3")  # use 'mpg123 output.mp3' or a suitable alternative.
+    # os.system("mpg123 output.mp3")  # use 'mpg123 output.mp3' or a suitable alternative.
 
 # Example usage:
 speak_text("Hello world, this is a test of Google Text to Speech")
-    
